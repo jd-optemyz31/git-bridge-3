@@ -77,11 +77,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "AI Studio App" },
-      { name: "description", content: "AI Studio Generated Project" },
-      { name: "author", content: "AI Studio" },
-      { property: "og:title", content: "AI Studio App" },
-      { property: "og:description", content: "AI Studio Generated Project" },
+      { title: "Lead Hero Health Check" },
+      {
+        name: "description",
+        content:
+          "Read-only Lead Hero account health checks, blast analysis, and ClickUp reporting.",
+      },
+      { name: "author", content: "Lead Hero" },
+      { property: "og:title", content: "Lead Hero Health Check" },
+      {
+        property: "og:description",
+        content:
+          "Read-only Lead Hero account health checks, blast analysis, and ClickUp reporting.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
