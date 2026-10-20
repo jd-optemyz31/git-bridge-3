@@ -150,6 +150,84 @@ export type Database = {
           },
         ]
       }
+      blast_jobs: {
+        Row: {
+          blast_analysis_id: string | null
+          client_id: string
+          created_at: string
+          date_end: string | null
+          date_start: string | null
+          detail: string | null
+          error: string | null
+          id: string
+          message_phrase: string | null
+          percent: number
+          phase: string | null
+          phase_label: string | null
+          progress: Json | null
+          reply_tag: string | null
+          result: Json | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          blast_analysis_id?: string | null
+          client_id: string
+          created_at?: string
+          date_end?: string | null
+          date_start?: string | null
+          detail?: string | null
+          error?: string | null
+          id?: string
+          message_phrase?: string | null
+          percent?: number
+          phase?: string | null
+          phase_label?: string | null
+          progress?: Json | null
+          reply_tag?: string | null
+          result?: Json | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          blast_analysis_id?: string | null
+          client_id?: string
+          created_at?: string
+          date_end?: string | null
+          date_start?: string | null
+          detail?: string | null
+          error?: string | null
+          id?: string
+          message_phrase?: string | null
+          percent?: number
+          phase?: string | null
+          phase_label?: string | null
+          progress?: Json | null
+          reply_tag?: string | null
+          result?: Json | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blast_jobs_blast_analysis_id_fkey"
+            columns: ["blast_analysis_id"]
+            isOneToOne: false
+            referencedRelation: "blast_analyses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blast_jobs_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       blast_reply_classifications: {
         Row: {
           analysis_method: string | null
