@@ -1,23 +1,12 @@
 import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import {
-  Building2,
-  Route as RouteIcon,
-  Bomb,
-  ClipboardCheck,
-  FileText,
-  Settings,
-  LogOut,
-} from "lucide-react";
+import { Building2, Bomb, Settings, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 
 const NAV = [
   { to: "/clients", label: "Clients", icon: Building2 },
-  { to: "/routing", label: "Routing Setup", icon: RouteIcon },
   { to: "/blast-analyzer", label: "Blast Analyzer", icon: Bomb },
-  { to: "/monthly-check", label: "Monthly Check", icon: ClipboardCheck },
-  { to: "/reports", label: "Reports", icon: FileText },
   { to: "/settings", label: "Settings", icon: Settings },
 ];
 

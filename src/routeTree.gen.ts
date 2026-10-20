@@ -14,9 +14,6 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedBlastAnalyzerRouteImport } from './routes/_authenticated/blast-analyzer'
 import { Route as AuthenticatedClientsRouteImport } from './routes/_authenticated/clients'
-import { Route as AuthenticatedMonthlyCheckRouteImport } from './routes/_authenticated/monthly-check'
-import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
-import { Route as AuthenticatedRoutingRouteImport } from './routes/_authenticated/routing'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 
 const IndexRoute = IndexRouteImport.update({
@@ -44,22 +41,6 @@ const AuthenticatedClientsRoute = AuthenticatedClientsRouteImport.update({
   path: '/clients',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedMonthlyCheckRoute =
-  AuthenticatedMonthlyCheckRouteImport.update({
-    id: '/monthly-check',
-    path: '/monthly-check',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
-  id: '/reports',
-  path: '/reports',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedRoutingRoute = AuthenticatedRoutingRouteImport.update({
-  id: '/routing',
-  path: '/routing',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -71,9 +52,6 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/blast-analyzer': typeof AuthenticatedBlastAnalyzerRoute
   '/clients': typeof AuthenticatedClientsRoute
-  '/monthly-check': typeof AuthenticatedMonthlyCheckRoute
-  '/reports': typeof AuthenticatedReportsRoute
-  '/routing': typeof AuthenticatedRoutingRoute
   '/settings': typeof AuthenticatedSettingsRoute
 }
 export interface FileRoutesByTo {
@@ -81,9 +59,6 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/blast-analyzer': typeof AuthenticatedBlastAnalyzerRoute
   '/clients': typeof AuthenticatedClientsRoute
-  '/monthly-check': typeof AuthenticatedMonthlyCheckRoute
-  '/reports': typeof AuthenticatedReportsRoute
-  '/routing': typeof AuthenticatedRoutingRoute
   '/settings': typeof AuthenticatedSettingsRoute
 }
 export interface FileRoutesById {
@@ -93,32 +68,13 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/blast-analyzer': typeof AuthenticatedBlastAnalyzerRoute
   '/_authenticated/clients': typeof AuthenticatedClientsRoute
-  '/_authenticated/monthly-check': typeof AuthenticatedMonthlyCheckRoute
-  '/_authenticated/reports': typeof AuthenticatedReportsRoute
-  '/_authenticated/routing': typeof AuthenticatedRoutingRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/auth'
-    | '/blast-analyzer'
-    | '/clients'
-    | '/monthly-check'
-    | '/reports'
-    | '/routing'
-    | '/settings'
+  fullPaths: '/' | '/auth' | '/blast-analyzer' | '/clients' | '/settings'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/auth'
-    | '/blast-analyzer'
-    | '/clients'
-    | '/monthly-check'
-    | '/reports'
-    | '/routing'
-    | '/settings'
+  to: '/' | '/auth' | '/blast-analyzer' | '/clients' | '/settings'
   id:
     | '__root__'
     | '/'
@@ -126,9 +82,6 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/blast-analyzer'
     | '/_authenticated/clients'
-    | '/_authenticated/monthly-check'
-    | '/_authenticated/reports'
-    | '/_authenticated/routing'
     | '/_authenticated/settings'
   fileRoutesById: FileRoutesById
 }
@@ -175,27 +128,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedClientsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/monthly-check': {
-      id: '/_authenticated/monthly-check'
-      path: '/monthly-check'
-      fullPath: '/monthly-check'
-      preLoaderRoute: typeof AuthenticatedMonthlyCheckRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/reports': {
-      id: '/_authenticated/reports'
-      path: '/reports'
-      fullPath: '/reports'
-      preLoaderRoute: typeof AuthenticatedReportsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/routing': {
-      id: '/_authenticated/routing'
-      path: '/routing'
-      fullPath: '/routing'
-      preLoaderRoute: typeof AuthenticatedRoutingRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/settings': {
       id: '/_authenticated/settings'
       path: '/settings'
@@ -209,18 +141,12 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedBlastAnalyzerRoute: typeof AuthenticatedBlastAnalyzerRoute
   AuthenticatedClientsRoute: typeof AuthenticatedClientsRoute
-  AuthenticatedMonthlyCheckRoute: typeof AuthenticatedMonthlyCheckRoute
-  AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
-  AuthenticatedRoutingRoute: typeof AuthenticatedRoutingRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBlastAnalyzerRoute: AuthenticatedBlastAnalyzerRoute,
   AuthenticatedClientsRoute: AuthenticatedClientsRoute,
-  AuthenticatedMonthlyCheckRoute: AuthenticatedMonthlyCheckRoute,
-  AuthenticatedReportsRoute: AuthenticatedReportsRoute,
-  AuthenticatedRoutingRoute: AuthenticatedRoutingRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
 }
 
