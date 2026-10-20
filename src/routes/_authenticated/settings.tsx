@@ -1,10 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Loader2 } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import { getCurrentUser } from "@/lib/users.functions";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({
@@ -21,6 +27,37 @@ function SettingsPage() {
   const { data: me, isLoading } = useQuery({
     queryKey: ["me"],
     queryFn: getFn,
+  });
+
+  const [current, setCurrent] = useState("");
+  const [next, setNext] = useState("");
+  const [confirm, setConfirm] = useState("");
+
+  const changeMutation = useMutation({
+    mutationFn: async () => {
+      if (!next || next.length < 8) throw new Error("New password must be at least 8 characters.");
+      if (next !== confirm) throw new Error("New passwords do not match.");
+      if (!current) throw new Error("Enter your current password.");
+
+      // Re-verify the current password before allowing a change.
+      const { data: me } = await supabase.auth.getUser();
+      if (!me.user?.email) throw new Error("Session expired — sign in again.");
+      const { error: signInErr } = await supabase.auth.signInWithPassword({
+        email: me.user.email,
+        password: current,
+      });
+      if (signInErr) throw new Error("Current password is incorrect.");
+
+      const { error: updErr } = await supabase.auth.updateUser({ password: next });
+      if (updErr) throw new Error(updErr.message);
+    },
+    onSuccess: () => {
+      toast.success("Password changed.");
+      setCurrent("");
+      setNext("");
+      setConfirm("");
+    },
+    onError: (e: Error) => toast.error(e.message),
   });
 
   return (
@@ -67,13 +104,54 @@ function SettingsPage() {
         <CardHeader>
           <CardTitle>Change password</CardTitle>
           <CardDescription>
-            Self-service password change requires your current password.
+            Enter your current password to verify, then choose a new one (min 8 characters).
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">
-            Password management is wired in the next phase.
-          </p>
+          <form
+            className="space-y-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              changeMutation.mutate();
+            }}
+          >
+            <div className="space-y-2">
+              <Label htmlFor="current">Current password</Label>
+              <Input
+                id="current"
+                type="password"
+                autoComplete="current-password"
+                value={current}
+                onChange={(e) => setCurrent(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="next">New password</Label>
+              <Input
+                id="next"
+                type="password"
+                autoComplete="new-password"
+                value={next}
+                onChange={(e) => setNext(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirm">Confirm new password</Label>
+              <Input
+                id="confirm"
+                type="password"
+                autoComplete="new-password"
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                required
+              />
+            </div>
+            <Button type="submit" disabled={changeMutation.isPending}>
+              {changeMutation.isPending ? "Saving…" : "Change password"}
+            </Button>
+          </form>
         </CardContent>
       </Card>
 
