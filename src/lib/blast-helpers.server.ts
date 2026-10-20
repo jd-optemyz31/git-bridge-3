@@ -23,7 +23,10 @@ export function encryptToken(value: string): string {
 
 export function decryptToken(value: string | null | undefined): string {
   if (!value) return "";
-  const [ivRaw, tagRaw, encryptedRaw] = String(value).split(".");
+  const parts = String(value).split(".");
+  // Legacy raw tokens (no iv.tag.ciphertext envelope) are returned as-is.
+  if (parts.length !== 3) return String(value);
+  const [ivRaw, tagRaw, encryptedRaw] = parts as [string, string, string];
   if (!ivRaw || !tagRaw || !encryptedRaw) return "";
   try {
     const decipher = crypto.createDecipheriv(

@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { encryptToken } from "./blast-helpers.server";
 
 export type ClientRow = {
   id: string;
@@ -72,8 +73,9 @@ export const upsertClient = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((data) => clientInputSchema.parse(data))
   .handler(async ({ data, context }) => {
-    const token = data.ghl_private_integration_token?.trim();
-    const preview = token ? token.slice(0, 4) + "…" + token.slice(-4) : null;
+    const rawToken = data.ghl_private_integration_token?.trim();
+    const token = rawToken ? encryptToken(rawToken) : "";
+    const preview = rawToken ? rawToken.slice(0, 4) + "…" + rawToken.slice(-4) : null;
 
     const common = {
       name: data.name,
