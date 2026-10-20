@@ -26,9 +26,16 @@ export function decryptToken(value: string | null | undefined): string {
   const [ivRaw, tagRaw, encryptedRaw] = String(value).split(".");
   if (!ivRaw || !tagRaw || !encryptedRaw) return "";
   try {
-    const decipher = crypto.createDecipheriv("aes-256-gcm", encryptionKey(), Buffer.from(ivRaw, "base64"));
+    const decipher = crypto.createDecipheriv(
+      "aes-256-gcm",
+      encryptionKey(),
+      Buffer.from(ivRaw, "base64"),
+    );
     decipher.setAuthTag(Buffer.from(tagRaw, "base64"));
-    return Buffer.concat([decipher.update(Buffer.from(encryptedRaw, "base64")), decipher.final()]).toString("utf8");
+    return Buffer.concat([
+      decipher.update(Buffer.from(encryptedRaw, "base64")),
+      decipher.final(),
+    ]).toString("utf8");
   } catch {
     return "";
   }
@@ -62,12 +69,16 @@ export function parseJsonObject(text: string | null | undefined): any {
 }
 
 export function sanitizeApiDetail(text: unknown): string {
-  const clean = String(text ?? "").replace(/\s+/g, " ").trim();
+  const clean = String(text ?? "")
+    .replace(/\s+/g, " ")
+    .trim();
   return clean.length > 240 ? `${clean.slice(0, 240)}...` : clean;
 }
 
 export function truncateForAi(text: unknown, maxLength = 2000): string {
-  const clean = String(text || "").replace(/\s+/g, " ").trim();
+  const clean = String(text || "")
+    .replace(/\s+/g, " ")
+    .trim();
   return clean.length > maxLength ? `${clean.slice(0, maxLength)}...` : clean;
 }
 
@@ -93,7 +104,14 @@ export function valueText(record: any, keys: string[]): string {
 }
 
 export function timestampOf(record: any): number {
-  const value = record?.createdAt || record?.dateAdded || record?.dateCreated || record?.updatedAt || record?.timestamp || record?.messageDate || record?.date;
+  const value =
+    record?.createdAt ||
+    record?.dateAdded ||
+    record?.dateCreated ||
+    record?.updatedAt ||
+    record?.timestamp ||
+    record?.messageDate ||
+    record?.date;
   if (!value) return 0;
   if (typeof value === "number") return value < 100000000000 ? value * 1000 : value;
   const parsed = Date.parse(value);
@@ -124,19 +142,34 @@ export function contactId(contact: any): string {
 }
 export function contactName(contact: any): string {
   const fullName = [contact?.firstName, contact?.lastName].filter(Boolean).join(" ").trim();
-  return contact?.name || contact?.fullName || fullName || contact?.email || contact?.phone || contact?.id || "Unknown contact";
+  return (
+    contact?.name ||
+    contact?.fullName ||
+    fullName ||
+    contact?.email ||
+    contact?.phone ||
+    contact?.id ||
+    "Unknown contact"
+  );
 }
 export function contactTags(contact: any): string[] {
   const tags = contact?.tags || contact?.contactTags || contact?.tag;
   if (Array.isArray(tags)) {
-    return tags.map((t: any) => (typeof t === "string" ? t : t?.name || t?.value || "")).filter(Boolean);
+    return tags
+      .map((t: any) => (typeof t === "string" ? t : t?.name || t?.value || ""))
+      .filter(Boolean);
   }
-  return String(tags || "").split(",").map((t) => t.trim()).filter(Boolean);
+  return String(tags || "")
+    .split(",")
+    .map((t) => t.trim())
+    .filter(Boolean);
 }
 export function contactHasTag(contact: any, tag: string): boolean {
   if (!tag) return true;
   const needle = tag.toLowerCase();
-  return contactTags(contact).some((t) => t.toLowerCase() === needle || t.toLowerCase().includes(needle));
+  return contactTags(contact).some(
+    (t) => t.toLowerCase() === needle || t.toLowerCase().includes(needle),
+  );
 }
 export function messageText(message: any): string {
   return valueText(message, ["body", "message", "text", "content", "subject", "snippet"]);
@@ -152,7 +185,14 @@ export function messageContactId(message: any): string {
   );
 }
 export function messageChannel(message: any): string {
-  return valueText(message, ["channel", "messageChannel", "message_channel", "conversationProvider", "source", "medium"]);
+  return valueText(message, [
+    "channel",
+    "messageChannel",
+    "message_channel",
+    "conversationProvider",
+    "source",
+    "medium",
+  ]);
 }
 export function isCallMessage(message: any): boolean {
   const channel = messageChannel(message).toLowerCase();
@@ -179,10 +219,14 @@ export function messageDirectionLabel(message: any): string {
 export function findContactPaginationMeta(value: any, depth = 0): any {
   if (!value || typeof value !== "object" || Array.isArray(value) || depth > 4) return {};
   if (
-    value.startAfter !== undefined || value.startAfterId !== undefined ||
-    value.nextStartAfter !== undefined || value.nextStartAfterId !== undefined ||
-    value.start_after !== undefined || value.start_after_id !== undefined ||
-    value.next_start_after !== undefined || value.next_start_after_id !== undefined
+    value.startAfter !== undefined ||
+    value.startAfterId !== undefined ||
+    value.nextStartAfter !== undefined ||
+    value.nextStartAfterId !== undefined ||
+    value.start_after !== undefined ||
+    value.start_after_id !== undefined ||
+    value.next_start_after !== undefined ||
+    value.next_start_after_id !== undefined
   ) {
     return value;
   }
@@ -193,21 +237,41 @@ export function findContactPaginationMeta(value: any, depth = 0): any {
   return {};
 }
 
-export function contactCursorFromPayload(payload: any, pageItems: any[]): { startAfter: string; startAfterId: string } | null {
+export function contactCursorFromPayload(
+  payload: any,
+  pageItems: any[],
+): { startAfter: string; startAfterId: string } | null {
   const meta = findContactPaginationMeta(payload);
   const lastContact = pageItems.at(-1);
-  const startAfter = meta.nextStartAfter ?? meta.startAfter ?? meta.next_start_after ?? meta.start_after ?? String(timestampOf(lastContact || {}));
-  const startAfterId = meta.nextStartAfterId ?? meta.startAfterId ?? meta.next_start_after_id ?? meta.start_after_id ?? contactId(lastContact || {});
+  const startAfter =
+    meta.nextStartAfter ??
+    meta.startAfter ??
+    meta.next_start_after ??
+    meta.start_after ??
+    String(timestampOf(lastContact || {}));
+  const startAfterId =
+    meta.nextStartAfterId ??
+    meta.startAfterId ??
+    meta.next_start_after_id ??
+    meta.start_after_id ??
+    contactId(lastContact || {});
   if (!startAfter || !startAfterId) return null;
   return { startAfter, startAfterId };
 }
 
 export function filterSearchedContacts(
   contacts: any[],
-  opts: { dateStart?: string; dateEnd?: string; replyTag?: string; createdDateFilter?: boolean; trustServerTagFilter?: boolean },
+  opts: {
+    dateStart?: string;
+    dateEnd?: string;
+    replyTag?: string;
+    createdDateFilter?: boolean;
+    trustServerTagFilter?: boolean;
+  },
 ): any[] {
   return contacts.filter((contact) => {
-    const matchesDate = !opts.createdDateFilter || isWithinDateRange(contact, opts.dateStart, opts.dateEnd);
+    const matchesDate =
+      !opts.createdDateFilter || isWithinDateRange(contact, opts.dateStart, opts.dateEnd);
     const matchesTag = opts.trustServerTagFilter || contactHasTag(contact, opts.replyTag || "");
     return matchesDate && matchesTag;
   });

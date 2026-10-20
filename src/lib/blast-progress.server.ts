@@ -43,29 +43,44 @@ export function blastProgress(
 
   if (phase === "contacts") {
     percent = 5 + Math.min(20, (safeCount / 50_000) * 20);
-    verb = opts.mode === "cursor" ? "[Sweeping contact pages...]" : "[Filtering reply-tag candidates...]";
+    verb =
+      opts.mode === "cursor"
+        ? "[Sweeping contact pages...]"
+        : "[Filtering reply-tag candidates...]";
     phaseLabel = "Contact scan";
-    detail = opts.detail || (opts.mode === "cursor"
-      ? `${safeCount.toLocaleString()} contacts inspected with read-only cursor pagination.`
-      : `${safeCount.toLocaleString()} reply-tag candidate contacts loaded.`);
+    detail =
+      opts.detail ||
+      (opts.mode === "cursor"
+        ? `${safeCount.toLocaleString()} contacts inspected with read-only cursor pagination.`
+        : `${safeCount.toLocaleString()} reply-tag candidate contacts loaded.`);
   } else if (phase === "messages") {
     percent = 25 + ratio(safeDone, safeTotal) * 25;
     verb = "[Gathering conversation trails...]";
     phaseLabel = "Conversation export";
-    detail = opts.detail || `${Math.min(safeDone, safeTotal)} of ${safeTotal} date windows exported.`;
+    detail =
+      opts.detail || `${Math.min(safeDone, safeTotal)} of ${safeTotal} date windows exported.`;
   } else if (phase === "matching") {
     percent = 53;
     verb = "[Anchoring outbound blast messages...]";
     phaseLabel = "Blast matching";
-    detail = opts.detail || `Matching the required phrase for ${safeCount.toLocaleString()} tagged contacts.`;
+    detail =
+      opts.detail ||
+      `Matching the required phrase for ${safeCount.toLocaleString()} tagged contacts.`;
   } else if (phase === "classifying") {
     percent = 56 + ratio(safeDone, safeTotal) * 39;
-    const idx = Math.floor(safeDone / Math.max(1, Math.ceil(safeTotal / classificationVerbs.length)));
-    verb = classificationVerbs[Math.min(classificationVerbs.length - 1, idx)] ?? classificationVerbs[0] ?? "";
+    const idx = Math.floor(
+      safeDone / Math.max(1, Math.ceil(safeTotal / classificationVerbs.length)),
+    );
+    verb =
+      classificationVerbs[Math.min(classificationVerbs.length - 1, idx)] ??
+      classificationVerbs[0] ??
+      "";
     phaseLabel = "Reply classification";
-    detail = opts.detail || (safeTotal
-      ? `${Math.min(safeDone, safeTotal).toLocaleString()} of ${safeTotal.toLocaleString()} tagged contacts reviewed.`
-      : "No tagged contacts require classification.");
+    detail =
+      opts.detail ||
+      (safeTotal
+        ? `${Math.min(safeDone, safeTotal).toLocaleString()} of ${safeTotal.toLocaleString()} tagged contacts reviewed.`
+        : "No tagged contacts require classification.");
   } else if (phase === "saving") {
     percent = 98;
     verb = "[Polishing the final analysis...]";
@@ -78,7 +93,16 @@ export function blastProgress(
     detail = opts.detail || `${safeDone.toLocaleString()} tagged contacts accounted for.`;
   }
 
-  return { phase, phaseLabel, verb, detail, percent: boundedPercent(percent), done: safeDone, total: safeTotal, count: safeCount };
+  return {
+    phase,
+    phaseLabel,
+    verb,
+    detail,
+    percent: boundedPercent(percent),
+    done: safeDone,
+    total: safeTotal,
+    count: safeCount,
+  };
 }
 
 export async function mapWithConcurrency<T, R>(

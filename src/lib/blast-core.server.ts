@@ -109,17 +109,20 @@ export async function generateLiveBlastAnalysis({
   });
 
   const messageWindowCount = dailyUtcWindowsCount(dateStart, dateEnd);
-  if (onProgress) await onProgress(blastProgress("messages", { done: 0, total: messageWindowCount }));
+  if (onProgress)
+    await onProgress(blastProgress("messages", { done: 0, total: messageWindowCount }));
   const messages = await highLevelExportMessages(client, token, {
     dateStart,
     dateEnd,
     onWindowProgress: ({ done, total, messageCount }) =>
-      onProgress?.(blastProgress("messages", {
-        done,
-        total,
-        count: messageCount,
-        detail: `${done} of ${total} date windows exported; ${messageCount.toLocaleString()} messages loaded read-only.`,
-      })),
+      onProgress?.(
+        blastProgress("messages", {
+          done,
+          total,
+          count: messageCount,
+          detail: `${done} of ${total} date windows exported; ${messageCount.toLocaleString()} messages loaded read-only.`,
+        }),
+      ),
   });
 
   if (onProgress) await onProgress(blastProgress("matching", { count: contacts.length }));
@@ -145,7 +148,10 @@ export async function generateLiveBlastAnalysis({
   let progressDone = 0;
   const replies = await mapWithConcurrency(contactContexts, 5, async (ctx) => {
     const dndStatus = contactDndStatus(ctx.contact, ctx.matchedBlast?.channel || "SMS");
-    const analysisState = blastContactAnalysisState({ blastFound: ctx.blastFound, latest: ctx.latest });
+    const analysisState = blastContactAnalysisState({
+      blastFound: ctx.blastFound,
+      latest: ctx.latest,
+    });
     const lastReplyDate = messageTimestamp(ctx.latest || ctx.latestCandidate) || "";
     if (!analysisState.eligible) {
       progressDone++;
@@ -189,7 +195,9 @@ export async function generateLiveBlastAnalysis({
       lastReplyDate,
       classification: analysis.classification,
       summary: analysis.summary,
-      evidence: analysis.evidence || `Matched HighLevel contact tag "${replyTag}" within the selected date range.`,
+      evidence:
+        analysis.evidence ||
+        `Matched HighLevel contact tag "${replyTag}" within the selected date range.`,
       threadMessageCount: ctx.thread.length,
       blastContextMatched: ctx.blastFound,
       confidence: analysis.confidence,
@@ -206,35 +214,58 @@ export async function generateLiveBlastAnalysis({
   });
 
   const noBlastMatchCount = Math.max(0, contacts.length - contactsWithMatchedBlast.length);
-  const matchedBlastWithoutReplyCount = Math.max(0, contactsWithMatchedBlast.length - contactsWithInboundReplies.length);
+  const matchedBlastWithoutReplyCount = Math.max(
+    0,
+    contactsWithMatchedBlast.length - contactsWithInboundReplies.length,
+  );
 
   const phraseMatches = messages.filter((m) => {
     if (!messagePhrase) return false;
     const cid = messageContactId(m);
-    return isOutboundMessage(m) && !contactIds.has(cid) && messageText(m).toLowerCase().includes(messagePhrase.toLowerCase());
+    return (
+      isOutboundMessage(m) &&
+      !contactIds.has(cid) &&
+      messageText(m).toLowerCase().includes(messagePhrase.toLowerCase())
+    );
   });
   const analyzedReplies = replies.filter((r) => r.analyzed);
   const counts = analyzedReplies.reduce<Record<string, number>>((acc, r) => {
     acc[r.classification] = (acc[r.classification] || 0) + 1;
     return acc;
   }, {});
-  const aiClassifiedCount = analyzedReplies.filter((r) => String(r.analysisMethod || "").startsWith("AI")).length;
-  const fallbackClassifiedCount = analyzedReplies.filter((r) => String(r.analysisMethod || "").includes("Rules")).length;
-  const dndClassifiedCount = analyzedReplies.filter((r) => r.analysisMethod === "HighLevel DND").length;
+  const aiClassifiedCount = analyzedReplies.filter((r) =>
+    String(r.analysisMethod || "").startsWith("AI"),
+  ).length;
+  const fallbackClassifiedCount = analyzedReplies.filter((r) =>
+    String(r.analysisMethod || "").includes("Rules"),
+  ).length;
+  const dndClassifiedCount = analyzedReplies.filter(
+    (r) => r.analysisMethod === "HighLevel DND",
+  ).length;
   const analysisMethods = [
     aiClassifiedCount ? "AI" : "",
     dndClassifiedCount ? "HighLevel DND" : "",
     fallbackClassifiedCount ? (aiConfig.apiKey ? "rules fallback" : "rules") : "",
   ].filter(Boolean);
-  const analysisMethod = analysisMethods.length ? analysisMethods.join(" + ") : "No classifications";
+  const analysisMethod = analysisMethods.length
+    ? analysisMethods.join(" + ")
+    : "No classifications";
   const methodParts = [
     aiClassifiedCount ? `${aiClassifiedCount} reply/replies were classified by AI` : "",
-    dndClassifiedCount ? `${dndClassifiedCount} were classified from read-only HighLevel DND status` : "",
-    fallbackClassifiedCount ? `${fallbackClassifiedCount} used ${aiConfig.apiKey ? "rules fallback" : "rules because AI is not configured"}` : "",
+    dndClassifiedCount
+      ? `${dndClassifiedCount} were classified from read-only HighLevel DND status`
+      : "",
+    fallbackClassifiedCount
+      ? `${fallbackClassifiedCount} used ${aiConfig.apiKey ? "rules fallback" : "rules because AI is not configured"}`
+      : "",
   ].filter(Boolean);
-  const methodSummary = methodParts.length ? `${methodParts.join(", ")}.` : "No reply conversations were classified.";
+  const methodSummary = methodParts.length
+    ? `${methodParts.join(", ")}.`
+    : "No reply conversations were classified.";
   const fallbackReasons = [...new Set(analyzedReplies.map((r) => r.analysisNote).filter(Boolean))];
-  const fallbackReasonSummary = fallbackReasons.length ? ` Reason: ${fallbackReasons.slice(0, 2).join(" ")}` : "";
+  const fallbackReasonSummary = fallbackReasons.length
+    ? ` Reason: ${fallbackReasons.slice(0, 2).join(" ")}`
+    : "";
   const blastContextMatches = analyzedReplies.filter((r) => r.blastContextMatched).length;
   const threadSummary = `${blastContextMatches} classified reply thread(s) were anchored to the matching outbound blast and included every exported message from that blast onward inside the selected date range.`;
 
@@ -330,7 +361,15 @@ export async function persistBlastAnalysis(
 
 export async function writeAuditLog(
   supabase: SupabaseClient<Database>,
-  event: { userId?: string | null; clientId?: string | null; action: string; targetType?: string; targetId?: string; status?: string; message?: string },
+  event: {
+    userId?: string | null;
+    clientId?: string | null;
+    action: string;
+    targetType?: string;
+    targetId?: string;
+    status?: string;
+    message?: string;
+  },
 ): Promise<void> {
   try {
     await supabase.from("api_audit_logs").insert({

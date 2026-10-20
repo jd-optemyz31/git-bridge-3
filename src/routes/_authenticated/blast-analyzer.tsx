@@ -15,13 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -38,8 +32,7 @@ export const Route = createFileRoute("/_authenticated/blast-analyzer")({
       { title: "Blast Analyzer — Lead Hero Health Check" },
       {
         name: "description",
-        content:
-          "Run a live, read-only HighLevel blast reply analysis anytime.",
+        content: "Run a live, read-only HighLevel blast reply analysis anytime.",
       },
       { property: "og:title", content: "Blast Analyzer — Lead Hero Health Check" },
       {
@@ -98,16 +91,15 @@ function BlastAnalyzerPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const canRun =
-    !!clientId && !!start && !!end && !!phrase && !runMutation.isPending;
+  const canRun = !!clientId && !!start && !!end && !!phrase && !runMutation.isPending;
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold">Blast Analyzer</h1>
         <p className="text-sm text-muted-foreground">
-          Run a live, read-only HighLevel blast reply analysis anytime —
-          independent of monthly reports.
+          Run a live, read-only HighLevel blast reply analysis anytime — independent of monthly
+          reports.
         </p>
       </div>
 
@@ -116,9 +108,8 @@ function BlastAnalyzerPage() {
         <CardHeader>
           <CardTitle>Run analysis</CardTitle>
           <CardDescription>
-            The blast message phrase anchors each conversation to the outbound
-            blast. Pick a connected client, a date range, the reply tag, and the
-            phrase to match.
+            The blast message phrase anchors each conversation to the outbound blast. Pick a
+            connected client, a date range, the reply tag, and the phrase to match.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -150,18 +141,14 @@ function BlastAnalyzerPage() {
                   </select>
                   {selectedClient && !selectedClient.has_token && (
                     <p className="text-xs text-destructive">
-                      This client has no connected HighLevel token. Add one on
-                      the Clients page first.
+                      This client has no connected HighLevel token. Add one on the Clients page
+                      first.
                     </p>
                   )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="rt">Reply tag</Label>
-                  <Input
-                    id="rt"
-                    value={replyTag}
-                    onChange={(e) => setReplyTag(e.target.value)}
-                  />
+                  <Input id="rt" value={replyTag} onChange={(e) => setReplyTag(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="bs">Start date</Label>
@@ -174,12 +161,7 @@ function BlastAnalyzerPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="be">End date</Label>
-                  <Input
-                    id="be"
-                    type="date"
-                    value={end}
-                    onChange={(e) => setEnd(e.target.value)}
-                  />
+                  <Input id="be" type="date" value={end} onChange={(e) => setEnd(e.target.value)} />
                 </div>
                 <div className="space-y-2 sm:col-span-2">
                   <Label htmlFor="bp">Blast message phrase (required)</Label>
@@ -190,8 +172,8 @@ function BlastAnalyzerPage() {
                     onChange={(e) => setPhrase(e.target.value)}
                   />
                   <p className="text-xs text-muted-foreground">
-                    Only contacts tagged with the reply tag whose conversations
-                    contain this outbound phrase are classified.
+                    Only contacts tagged with the reply tag whose conversations contain this
+                    outbound phrase are classified.
                   </p>
                 </div>
               </div>
@@ -223,13 +205,10 @@ function BlastAnalyzerPage() {
           <CardContent className="flex items-center gap-3 py-6">
             <Loader2 className="h-5 w-5 animate-spin text-primary" />
             <div>
-              <p className="text-sm font-medium">
-                Running live blast analysis…
-              </p>
+              <p className="text-sm font-medium">Running live blast analysis…</p>
               <p className="text-xs text-muted-foreground">
-                Scanning contacts, exporting conversations, anchoring the blast,
-                and classifying replies. This can take a moment for large date
-                ranges.
+                Scanning contacts, exporting conversations, anchoring the blast, and classifying
+                replies. This can take a moment for large date ranges.
               </p>
             </div>
           </CardContent>
@@ -244,9 +223,7 @@ function BlastAnalyzerPage() {
         <Card>
           <CardHeader>
             <CardTitle>Recent analyses</CardTitle>
-            <CardDescription>
-              Saved runs for this client, newest first.
-            </CardDescription>
+            <CardDescription>Saved runs for this client, newest first.</CardDescription>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
@@ -269,15 +246,11 @@ function BlastAnalyzerPage() {
                       {a.dateStart} → {a.dateEnd}
                     </TableCell>
                     <TableCell className="text-sm">{a.replyTag}</TableCell>
-                    <TableCell className="text-sm">
-                      {a.taggedContactCount}
-                    </TableCell>
+                    <TableCell className="text-sm">{a.taggedContactCount}</TableCell>
                     <TableCell className="text-sm">{a.positiveCount}</TableCell>
                     <TableCell className="text-sm">{a.negativeCount}</TableCell>
                     <TableCell className="text-sm">{a.optOutCount}</TableCell>
-                    <TableCell className="text-sm">
-                      {a.needsReviewCount}
-                    </TableCell>
+                    <TableCell className="text-sm">{a.needsReviewCount}</TableCell>
                     <TableCell className="text-xs text-muted-foreground">
                       {new Date(a.createdAt).toLocaleString()}
                     </TableCell>
@@ -319,13 +292,8 @@ function BlastResults({ analysis }: { analysis: BlastAnalysis }) {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {stats.map((s) => (
-              <div
-                key={s.label}
-                className="rounded-lg border border-border bg-muted/40 p-3"
-              >
-                <div className={`text-2xl font-semibold ${s.tone}`}>
-                  {s.value}
-                </div>
+              <div key={s.label} className="rounded-lg border border-border bg-muted/40 p-3">
+                <div className={`text-2xl font-semibold ${s.tone}`}>{s.value}</div>
                 <div className="text-xs text-muted-foreground">{s.label}</div>
               </div>
             ))}
@@ -362,13 +330,9 @@ function BlastResults({ analysis }: { analysis: BlastAnalysis }) {
               <TableBody>
                 {analysis.replies.map((r: BlastReply) => (
                   <TableRow key={r.id}>
-                    <TableCell className="font-medium">
-                      {r.contactName}
-                    </TableCell>
+                    <TableCell className="font-medium">{r.contactName}</TableCell>
                     <TableCell className="text-xs text-muted-foreground">
-                      {r.lastReplyDate
-                        ? new Date(r.lastReplyDate).toLocaleString()
-                        : "—"}
+                      {r.lastReplyDate ? new Date(r.lastReplyDate).toLocaleString() : "—"}
                     </TableCell>
                     <TableCell>
                       <ClassificationBadge value={r.classification} />
@@ -377,9 +341,7 @@ function BlastResults({ analysis }: { analysis: BlastAnalysis }) {
                       {r.analysisMethod || "—"}
                     </TableCell>
                     <TableCell className="text-right text-xs text-muted-foreground">
-                      {r.confidence != null
-                        ? `${Math.round(r.confidence * 100)}%`
-                        : "—"}
+                      {r.confidence != null ? `${Math.round(r.confidence * 100)}%` : "—"}
                     </TableCell>
                     <TableCell className="max-w-md text-xs text-muted-foreground">
                       {r.summary}

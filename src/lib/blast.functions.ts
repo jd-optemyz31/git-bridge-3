@@ -134,7 +134,8 @@ export const getBlastAnalysis = createServerFn({ method: "GET" })
       optOutCount: row.opt_out_count ?? 0,
       needsReviewCount: row.needs_review_count ?? 0,
       totalRepliedContacts: row.total_replied_contacts ?? 0,
-      analysisMethod: (row as Record<string, unknown>)["analysis_method"] as string | null ?? null,
+      analysisMethod:
+        ((row as Record<string, unknown>)["analysis_method"] as string | null) ?? null,
       summary: row.summary ?? null,
       createdAt: row.created_at,
       replies,
@@ -170,7 +171,9 @@ export const runBlastAnalysis = createServerFn({ method: "POST" })
       .single();
     if (clientErr || !clientRow) throw new Error("Client not found or no access.");
     if (!clientRow.ghl_private_integration_token_encrypted) {
-      throw new Error("This client has no connected HighLevel token. Connect one on the Clients page first.");
+      throw new Error(
+        "This client has no connected HighLevel token. Connect one on the Clients page first.",
+      );
     }
 
     const token = decryptToken(clientRow.ghl_private_integration_token_encrypted);

@@ -45,7 +45,14 @@ function assertHighLevelReadOnly(method: string, endpointPath: string) {
 
 export async function highLevelRequest(
   client: HlClient,
-  opts: { method?: string; endpointPath: string; query?: Record<string, any>; body?: any; apiVersion?: string; token: string },
+  opts: {
+    method?: string;
+    endpointPath: string;
+    query?: Record<string, any>;
+    body?: any;
+    apiVersion?: string;
+    token: string;
+  },
 ): Promise<any> {
   const method = opts.method || "GET";
   assertHighLevelReadOnly(method, opts.endpointPath);
@@ -78,21 +85,34 @@ export async function highLevelRequest(
   if (!response.ok) {
     const error: any = new Error("HighLevel API request failed.");
     error.status = response.status;
-    error.detail = sanitizeApiDetail(typeof payload === "string" ? payload : payload?.message || payload?.error || raw);
+    error.detail = sanitizeApiDetail(
+      typeof payload === "string" ? payload : payload?.message || payload?.error || raw,
+    );
     throw error;
   }
   return payload;
 }
 
 async function collectPagedHighLevelItems({
-  fetchPage, extractItems, itemId, onPage, pageSize = 100, maxPages = 1, failOnPageLimit = false,
+  fetchPage,
+  extractItems,
+  itemId,
+  onPage,
+  pageSize = 100,
+  maxPages = 1,
+  failOnPageLimit = false,
   pageLimitErrorMessage = "HighLevel pagination reached its configured safety limit.",
 }: {
   fetchPage: (page: number, pageSize: number) => Promise<any>;
   extractItems: (payload: any) => any[];
   itemId: (item: any) => string;
-  onPage?: ((info: { page: number; pageItemCount: number; itemCount: number }) => void | Promise<void>) | undefined;
-  pageSize?: number; maxPages?: number; failOnPageLimit?: boolean; pageLimitErrorMessage?: string;
+  onPage?:
+    | ((info: { page: number; pageItemCount: number; itemCount: number }) => void | Promise<void>)
+    | undefined;
+  pageSize?: number;
+  maxPages?: number;
+  failOnPageLimit?: boolean;
+  pageLimitErrorMessage?: string;
 }): Promise<any[]> {
   const items: any[] = [];
   const seen = new Set<string>();
@@ -119,7 +139,14 @@ async function collectPagedHighLevelItems({
 }
 
 async function collectCursorPagedHighLevelItems({
-  fetchPage, extractItems, extractCursor, itemId, onPage, pageSize = 100, maxPages = 1, failOnPageLimit = false,
+  fetchPage,
+  extractItems,
+  extractCursor,
+  itemId,
+  onPage,
+  pageSize = 100,
+  maxPages = 1,
+  failOnPageLimit = false,
   pageLimitErrorMessage = "HighLevel cursor pagination reached its configured safety limit.",
   missingCursorErrorMessage = "HighLevel returned a full page without a cursor for the next contact page.",
 }: {
@@ -127,8 +154,14 @@ async function collectCursorPagedHighLevelItems({
   extractItems: (payload: any) => any[];
   extractCursor: (payload: any, pageItems: any[]) => any;
   itemId: (item: any) => string;
-  onPage?: ((info: { page: number; pageItemCount: number; itemCount: number }) => void | Promise<void>) | undefined;
-  pageSize?: number; maxPages?: number; failOnPageLimit?: boolean; pageLimitErrorMessage?: string; missingCursorErrorMessage?: string;
+  onPage?:
+    | ((info: { page: number; pageItemCount: number; itemCount: number }) => void | Promise<void>)
+    | undefined;
+  pageSize?: number;
+  maxPages?: number;
+  failOnPageLimit?: boolean;
+  pageLimitErrorMessage?: string;
+  missingCursorErrorMessage?: string;
 }): Promise<any[]> {
   const items: any[] = [];
   const seen = new Set<string>();
@@ -156,7 +189,9 @@ async function collectCursorPagedHighLevelItems({
     }
     const key = JSON.stringify(nextCursor);
     if (seenCursors.has(key)) {
-      throw new Error("HighLevel repeated the same contact cursor; the scan was stopped to avoid incomplete results.");
+      throw new Error(
+        "HighLevel repeated the same contact cursor; the scan was stopped to avoid incomplete results.",
+      );
     }
     seenCursors.add(key);
     cursor = nextCursor;
@@ -167,7 +202,10 @@ async function collectCursorPagedHighLevelItems({
   return items;
 }
 
-export function dailyUtcWindows(dateStart: string, dateEnd: string): { startDate: string; endDate: string }[] {
+export function dailyUtcWindows(
+  dateStart: string,
+  dateEnd: string,
+): { startDate: string; endDate: string }[] {
   if (!dateStart || !dateEnd) return [{ startDate: "", endDate: "" }];
   const rangeStart = Date.parse(`${dateStart}T00:00:00.000Z`);
   const rangeEnd = Date.parse(`${dateEnd}T23:59:59.999Z`);
@@ -189,29 +227,57 @@ export async function highLevelSearchContacts(
   client: HlClient,
   token: string,
   opts: {
-    dateStart?: string; dateEnd?: string; replyTag?: string; limit?: number; maxPages?: number;
+    dateStart?: string;
+    dateEnd?: string;
+    replyTag?: string;
+    limit?: number;
+    maxPages?: number;
     createdDateFilter?: boolean;
     onPageProgress?: (info: { mode: string; count: number }) => void | Promise<void>;
   },
 ): Promise<any[]> {
-  const { dateStart, dateEnd, replyTag = "", limit = 100, maxPages = 1, createdDateFilter = true, onPageProgress } = opts;
+  const {
+    dateStart,
+    dateEnd,
+    replyTag = "",
+    limit = 100,
+    maxPages = 1,
+    createdDateFilter = true,
+    onPageProgress,
+  } = opts;
   const filters: any[] = [];
   if (replyTag) filters.push({ field: "tags", operator: "contains", value: replyTag });
   if (createdDateFilter && dateStart && dateEnd) {
-    filters.push({ field: "dateAdded", operator: "range", value: { gte: `${dateStart}T00:00:00.000Z`, lte: `${dateEnd}T23:59:59.999Z` } });
+    filters.push({
+      field: "dateAdded",
+      operator: "range",
+      value: { gte: `${dateStart}T00:00:00.000Z`, lte: `${dateEnd}T23:59:59.999Z` },
+    });
   }
   const offsetPageLimit = Math.min(maxPages, 100);
 
   const searchPages = (searchFilters: any[]) =>
     collectPagedHighLevelItems({
-      pageSize: limit, maxPages: offsetPageLimit, failOnPageLimit: maxPages > 1,
+      pageSize: limit,
+      maxPages: offsetPageLimit,
+      failOnPageLimit: maxPages > 1,
       pageLimitErrorMessage: "HighLevel offset pagination reached its 10,000-contact window.",
-      itemId: contactId, extractItems: extractContacts,
-      onPage: onPageProgress ? ({ itemCount }) => onPageProgress({ mode: "filtered", count: itemCount }) : undefined,
+      itemId: contactId,
+      extractItems: extractContacts,
+      onPage: onPageProgress
+        ? ({ itemCount }) => onPageProgress({ mode: "filtered", count: itemCount })
+        : undefined,
       fetchPage: (page, pageSize) =>
         highLevelRequest(client, {
-          method: "POST", endpointPath: "/contacts/search", token,
-          body: { locationId: client.locationId, page, pageLimit: pageSize, ...(searchFilters.length ? { filters: searchFilters } : {}) },
+          method: "POST",
+          endpointPath: "/contacts/search",
+          token,
+          body: {
+            locationId: client.locationId,
+            page,
+            pageLimit: pageSize,
+            ...(searchFilters.length ? { filters: searchFilters } : {}),
+          },
         }),
     });
 
@@ -229,14 +295,24 @@ export async function highLevelSearchContacts(
   }
 
   const cursorContacts = await collectCursorPagedHighLevelItems({
-    pageSize: limit, maxPages, failOnPageLimit: maxPages > 1,
-    pageLimitErrorMessage: "HighLevel returned more contacts than the Blast Analyzer 50,000-contact safety limit. Narrow the account data before trusting this run.",
-    missingCursorErrorMessage: "HighLevel did not provide a cursor for the next contact page, so the Blast Analyzer stopped instead of saving partial results.",
-    itemId: contactId, extractItems: extractContacts, extractCursor: contactCursorFromPayload,
-    onPage: onPageProgress ? ({ itemCount }) => onPageProgress({ mode: "cursor", count: itemCount }) : undefined,
+    pageSize: limit,
+    maxPages,
+    failOnPageLimit: maxPages > 1,
+    pageLimitErrorMessage:
+      "HighLevel returned more contacts than the Blast Analyzer 50,000-contact safety limit. Narrow the account data before trusting this run.",
+    missingCursorErrorMessage:
+      "HighLevel did not provide a cursor for the next contact page, so the Blast Analyzer stopped instead of saving partial results.",
+    itemId: contactId,
+    extractItems: extractContacts,
+    extractCursor: contactCursorFromPayload,
+    onPage: onPageProgress
+      ? ({ itemCount }) => onPageProgress({ mode: "cursor", count: itemCount })
+      : undefined,
     fetchPage: (cursor, pageSize) =>
       highLevelRequest(client, {
-        method: "GET", endpointPath: "/contacts/", token,
+        method: "GET",
+        endpointPath: "/contacts/",
+        token,
         query: { locationId: client.locationId, limit: pageSize, ...(cursor || {}) },
       }),
   });
@@ -253,7 +329,16 @@ export async function highLevelSearchContacts(
 export async function highLevelExportMessages(
   client: HlClient,
   token: string,
-  opts: { dateStart: string; dateEnd: string; channel?: string; onWindowProgress?: (info: { done: number; total: number; messageCount: number }) => void | Promise<void> },
+  opts: {
+    dateStart: string;
+    dateEnd: string;
+    channel?: string;
+    onWindowProgress?: (info: {
+      done: number;
+      total: number;
+      messageCount: number;
+    }) => void | Promise<void>;
+  },
 ): Promise<any[]> {
   const messages: any[] = [];
   const seen = new Set<string>();
@@ -271,10 +356,17 @@ export async function highLevelExportMessages(
       for (let attempt = 0; attempt < 3; attempt += 1) {
         try {
           payload = await highLevelRequest(client, {
-            method: "GET", endpointPath: "/conversations/messages/export", token,
+            method: "GET",
+            endpointPath: "/conversations/messages/export",
+            token,
             query: {
-              locationId: client.locationId, startDate: window.startDate, endDate: window.endDate,
-              channel: opts.channel || "", limit: pageLimit, pageLimit, cursor,
+              locationId: client.locationId,
+              startDate: window.startDate,
+              endDate: window.endDate,
+              channel: opts.channel || "",
+              limit: pageLimit,
+              pageLimit,
+              cursor,
             },
           });
           break;
@@ -292,14 +384,21 @@ export async function highLevelExportMessages(
       cursor = payload?.nextCursor || payload?.cursor || payload?.meta?.nextCursor || "";
       if (!cursor) break;
       if (page === maxPagesPerDay - 1) {
-        const error: any = new Error("HighLevel message export exceeded the safe daily page limit.");
+        const error: any = new Error(
+          "HighLevel message export exceeded the safe daily page limit.",
+        );
         error.status = 422;
-        error.detail = "The selected day contains too many messages to analyze completely. Run a narrower date range.";
+        error.detail =
+          "The selected day contains too many messages to analyze completely. Run a narrower date range.";
         throw error;
       }
     }
     if (opts.onWindowProgress) {
-      await opts.onWindowProgress({ done: i + 1, total: windows.length, messageCount: messages.length });
+      await opts.onWindowProgress({
+        done: i + 1,
+        total: windows.length,
+        messageCount: messages.length,
+      });
     }
   }
   return messages.filter((m) => isWithinDateRange(m, opts.dateStart, opts.dateEnd));
