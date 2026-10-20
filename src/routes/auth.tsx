@@ -3,7 +3,11 @@ import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
-import { getBootstrapStatus, seedInitialUsers } from "@/lib/bootstrap.functions";
+import {
+  getBootstrapStatus,
+  seedInitialUsers,
+  resetBootstrapPasswords,
+} from "@/lib/bootstrap.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,6 +48,19 @@ function AuthPage() {
     onError: (e: Error) => toast.error(e.message),
   });
   const [seededPasswords, setSeededPasswords] = useState<
+    { email: string; role: string; password: string }[]
+  >([]);
+
+  const resetFn = useServerFn(resetBootstrapPasswords);
+  const resetMutation = useMutation({
+    mutationFn: () => resetFn(),
+    onSuccess: (res) => {
+      toast.success("Passwords regenerated — new temp passwords shown below.");
+      setResetPasswords(res.reset);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+  const [resetPasswords, setResetPasswords] = useState<
     { email: string; role: string; password: string }[]
   >([]);
 
@@ -140,6 +157,41 @@ function AuthPage() {
                   </p>
                   <ul className="space-y-1">
                     {seededPasswords.map((p) => (
+                      <li key={p.email} className="font-mono text-xs">
+                        {p.email} · {p.role} · <span className="font-semibold">{p.password}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {bootstrap?.seeded && (
+          <Card className="border-dashed">
+            <CardHeader>
+              <CardTitle className="text-base">Locked out?</CardTitle>
+              <CardDescription>
+                Regenerate temporary passwords for the existing accounts. Use once to get back in,
+                then change passwords after sign-in.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Button
+                className="w-full"
+                disabled={resetMutation.isPending}
+                onClick={() => resetMutation.mutate()}
+              >
+                {resetMutation.isPending ? "Regenerating…" : "Regenerate passwords"}
+              </Button>
+              {resetPasswords.length > 0 && (
+                <div className="rounded-md border bg-muted/40 p-3 text-sm">
+                  <p className="mb-2 font-medium">
+                    New temporary passwords (change after sign-in):
+                  </p>
+                  <ul className="space-y-1">
+                    {resetPasswords.map((p) => (
                       <li key={p.email} className="font-mono text-xs">
                         {p.email} · {p.role} · <span className="font-semibold">{p.password}</span>
                       </li>
