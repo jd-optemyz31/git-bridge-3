@@ -327,11 +327,13 @@ export async function persistBlastAnalysis(
       workflow_name_or_id: analysis.workflowName || null,
       message_phrase: analysis.messagePhrase,
       total_replied_contacts: analysis.totalRepliedContacts,
+      tagged_contact_count: analysis.taggedContactCount,
       positive_count: analysis.positiveCount,
       negative_count: analysis.negativeCount,
       neutral_count: analysis.neutralCount,
       opt_out_count: analysis.optOutCount,
       needs_review_count: analysis.needsReviewCount,
+      analysis_method: analysis.analysisMethod || null,
       summary: analysis.summary,
       created_by_user_id: userId,
     })

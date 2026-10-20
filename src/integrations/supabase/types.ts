@@ -84,6 +84,7 @@ export type Database = {
       }
       blast_analyses: {
         Row: {
+          analysis_method: string | null
           client_id: string
           created_at: string
           created_by_user_id: string | null
@@ -98,11 +99,13 @@ export type Database = {
           positive_count: number
           reply_tag: string
           summary: string | null
+          tagged_contact_count: number
           total_replied_contacts: number
           updated_at: string
           workflow_name_or_id: string | null
         }
         Insert: {
+          analysis_method?: string | null
           client_id: string
           created_at?: string
           created_by_user_id?: string | null
@@ -117,11 +120,13 @@ export type Database = {
           positive_count?: number
           reply_tag: string
           summary?: string | null
+          tagged_contact_count?: number
           total_replied_contacts?: number
           updated_at?: string
           workflow_name_or_id?: string | null
         }
         Update: {
+          analysis_method?: string | null
           client_id?: string
           created_at?: string
           created_by_user_id?: string | null
@@ -136,6 +141,7 @@ export type Database = {
           positive_count?: number
           reply_tag?: string
           summary?: string | null
+          tagged_contact_count?: number
           total_replied_contacts?: number
           updated_at?: string
           workflow_name_or_id?: string | null

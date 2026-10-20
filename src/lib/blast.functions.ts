@@ -17,6 +17,65 @@ import {
 export type { BlastAnalysis, BlastReply } from "./blast-core.server";
 
 // ---------------------------------------------------------------------------
+// List ALL saved analyses across clients (for the Reports area)
+// ---------------------------------------------------------------------------
+
+export type BlastReportListItem = {
+  id: string;
+  clientId: string;
+  clientName: string | null;
+  dateStart: string;
+  dateEnd: string;
+  replyTag: string;
+  messagePhrase: string;
+  taggedContactCount: number;
+  positiveCount: number;
+  neutralCount: number;
+  negativeCount: number;
+  optOutCount: number;
+  needsReviewCount: number;
+  totalRepliedContacts: number;
+  analysisMethod: string | null;
+  summary: string | null;
+  createdAt: string;
+};
+
+export const listAllBlastAnalyses = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data: rows, error } = await context.supabase
+      .from("blast_analyses")
+      .select(
+        "id, client_id, date_start, date_end, reply_tag, message_phrase, total_replied_contacts, positive_count, neutral_count, negative_count, opt_out_count, needs_review_count, analysis_method, summary, created_at, clients(name)",
+      )
+      .order("created_at", { ascending: false });
+    if (error) throw new Error(error.message);
+    return (rows ?? []).map((r: any): BlastReportListItem => {
+      const clientJoin = (r as any)["clients"];
+      const clientName = clientJoin && typeof clientJoin === "object" ? clientJoin.name : null;
+      return {
+        id: r.id,
+        clientId: r.client_id,
+        clientName,
+        dateStart: r.date_start,
+        dateEnd: r.date_end,
+        replyTag: r.reply_tag,
+        messagePhrase: r.message_phrase,
+        taggedContactCount: r.total_replied_contacts ?? 0,
+        positiveCount: r.positive_count ?? 0,
+        neutralCount: r.neutral_count ?? 0,
+        negativeCount: r.negative_count ?? 0,
+        optOutCount: r.opt_out_count ?? 0,
+        needsReviewCount: r.needs_review_count ?? 0,
+        totalRepliedContacts: r.total_replied_contacts ?? 0,
+        analysisMethod: r.analysis_method ?? null,
+        summary: r.summary ?? null,
+        createdAt: r.created_at,
+      };
+    });
+  });
+
+// ---------------------------------------------------------------------------
 // List saved analyses for a client
 // ---------------------------------------------------------------------------
 
@@ -78,6 +137,7 @@ export const listBlastAnalyses = createServerFn({ method: "GET" })
 const getSchema = z.object({ id: z.string().uuid() });
 
 export type BlastAnalysisDetail = BlastAnalysisSummary & {
+  clientName: string | null;
   replies: BlastReply[];
 };
 
@@ -87,7 +147,7 @@ export const getBlastAnalysis = createServerFn({ method: "GET" })
   .handler(async ({ data, context }) => {
     const { data: row, error } = await context.supabase
       .from("blast_analyses")
-      .select("*")
+      .select("*, clients(name)")
       .eq("id", data.id)
       .single();
     if (error || !row) throw new Error("Analysis not found.");
@@ -120,14 +180,18 @@ export const getBlastAnalysis = createServerFn({ method: "GET" })
       dndChannel: "",
     }));
 
+    const clientJoin = (row as any)["clients"];
+    const clientName = clientJoin && typeof clientJoin === "object" ? clientJoin.name : null;
+
     return {
       id: row.id,
       clientId: row.client_id,
+      clientName,
       dateStart: row.date_start,
       dateEnd: row.date_end,
       replyTag: row.reply_tag,
       messagePhrase: row.message_phrase,
-      taggedContactCount: row.total_replied_contacts ?? 0,
+      taggedContactCount: row.tagged_contact_count ?? row.total_replied_contacts ?? 0,
       positiveCount: row.positive_count ?? 0,
       neutralCount: row.neutral_count ?? 0,
       negativeCount: row.negative_count ?? 0,
@@ -229,6 +293,21 @@ export const runBlastAnalysis = createServerFn({ method: "POST" })
     });
 
     return { analysis } satisfies RunBlastResult;
+  });
+
+// ---------------------------------------------------------------------------
+// Delete a saved blast analysis report
+// ---------------------------------------------------------------------------
+
+const deleteSchema = z.object({ id: z.string().uuid() });
+
+export const deleteBlastAnalysis = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((data) => deleteSchema.parse(data))
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase.from("blast_analyses").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
   });
 
 // Re-export so callers can import progress shaping without reaching into the
